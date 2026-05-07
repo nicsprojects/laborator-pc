@@ -42,6 +42,11 @@ public:
     /// @return True if response is equal with expected response
     bool readByte(char& d, I2cResponse expectedResponse = ACKNOWLEDGE);
 
+    /// @brief Read the last byte from I2C (sends NACK)
+    /// @param d The response will be in this variable
+    /// @return True if successful
+    bool readLastByte(char& d);
+
     /// @brief Send stop condition for I2C
     void sendStop();
 };

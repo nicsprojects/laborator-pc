@@ -1,0 +1,91 @@
+﻿#include <I2cMaster.h>
+#include <avr/io.h>
+#include <util/twi.h>
+
+#define F_CPU 16000000UL
+#define SCL_CLOCK 100000UL
+#define TWBR_VALUE ((F_CPU / SCL_CLOCK - 16) / 2)
+
+void I2cMaster::_writeByte(const char& data) {
+    // TODO 2: COMPLETAT - Trimitere 1 byte pe I2C
+    // Obtinute: setare TWDR, trigger transmisie, asteptare finalizare
+    // Extensii posibile: adaugare timeout, gestionare erori TWSR
+    TWDR = data;
+    TWCR = (1 << TWINT) | (1 << TWEN);
+    while (!(TWCR & (1 << TWINT)));
+}
+
+void I2cMaster::_readByte(char& data) {
+    // TODO 2: COMPLETAT - Citire 1 byte de pe I2C
+    // Obtinute: setare mod citire cu ACK, asteptare date, stocare rezultat
+    // Extensii posibile: implementare NACK pentru ultimul byte
+    TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
+    while (!(TWCR & (1 << TWINT)));
+    data = TWDR;
+}
+
+void I2cMaster::init() {
+    // TODO 1: COMPLETAT - Configurare I2C pentru mod master
+    // Obtinute: setare frecventa SCL la 100kHz, activare TWI
+    // Extensii posibile: suport multiple viteze (400kHz, etc.), configurare pini SDA/SCL
+    TWSR = 0x00;
+    TWBR = TWBR_VALUE;
+    TWCR = (1 << TWEN);
+}
+
+void I2cMaster::sendStart() {
+    // TODO 2: COMPLETAT - Trimitere conditie START I2C
+    // Obtinute: generare START condition, asteptare finalizare
+    // Extensii posibile: timeout, verificare status
+    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
+    while (!(TWCR & (1 << TWINT)));
+}
+
+bool I2cMaster::writeAddrWrite(const char& addr) {
+    // TODO 2: COMPLETAT - Trimitere adresa slave pentru WRITE
+    // Obtinute: shift adresa 7 biti, adunare bit R/W=0, verificare ACK
+    // Extensii necesare: verificare status TWSR mai detaliata, gestionare erori
+    char address = (addr << 1) | 0x00;
+    _writeByte(address);
+    bool ackReceived = (TWSR & 0xF8) == TW_MT_SLA_ACK;
+    return ackReceived;
+}
+
+bool I2cMaster::writeAddrRead(const char& addr) {
+    // TODO 2: COMPLETAT - Trimitere adresa slave pentru READ
+    // Obtinute: shift adresa 7 biti, adunare bit R/W=1, verificare ACK
+    // Extensii necesare: verificare status TWSR mai detaliata, gestionare erori
+    char address = (addr << 1) | 0x01;
+    _writeByte(address);
+    bool ackReceived = (TWSR & 0xF8) == TW_MR_SLA_ACK;
+    return ackReceived;
+}
+
+bool I2cMaster::writeByte(const char& d, I2cResponse expectedResponse) {
+    // TODO 2: COMPLETAT - Trimitere byte pe I2C dupa adresare
+    // Obtinute: trimitere byte, verificare ACK/NACK conform asteptarilor
+    // Extensii necesare: timeout, verificare status mai detaliata
+    _writeByte(d);
+    bool ackReceived = (TWSR & 0xF8) == TW_MT_DATA_ACK;
+    if (expectedResponse == ACKNOWLEDGE) {
+        return ackReceived;
+    } else {
+        return !ackReceived;
+    }
+}
+
+bool I2cMaster::readByte(char& d, I2cResponse expectedResponse) {
+    // TODO 2: COMPLETAT - Citire byte de pe I2C dupa adresare
+    // Obtinute: citire byte in parametrul d
+    // Extensii necesare: control NACK pentru ultimul byte, timeout, verificare status
+    _readByte(d);
+    return true;
+}
+
+void I2cMaster::sendStop() {
+    // TODO 2: COMPLETAT - Trimitere conditie STOP I2C
+    // Obtinute: generare STOP condition, asteptare finalizare
+    // Extensii posibile: timeout, verificare status
+    TWCR = (1 << TWINT) | (1 << TWSTO) | (1 << TWEN);
+    while (TWCR & (1 << TWSTO));
+}

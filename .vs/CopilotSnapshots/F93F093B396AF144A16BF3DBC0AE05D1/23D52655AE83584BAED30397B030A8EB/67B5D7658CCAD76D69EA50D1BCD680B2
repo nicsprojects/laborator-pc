@@ -1,0 +1,102 @@
+﻿// Objectives:
+// 1. configure I2C
+// 2. comupaction over I2C
+// 3. ADXL345 usage
+
+// Components
+// ADXL345 module
+// Bidirectional level shifter
+
+// Docs
+// ADXL345 Datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf
+
+#include "Arduino.h"
+#include "avr8-stub.h"
+#include "app_api.h" // only needed with flash breakpoints
+#include <I2cMaster.h>
+#include <Uart.h>
+
+#define ADX345_I2C_ADDR 0x53
+#define DATAX0 0x32
+
+I2cMaster wire;
+Uart uart;
+
+void setup() {
+    // initialize GDB stub
+    debug_init();
+
+    uart.init();
+    wire.init();
+
+    delay(500);
+
+    // TODO 2: COMPLETAT - Citire ID-ul ADXL345
+    // Obtinute: START condition, adresare slave mod READ, citire byte ID
+    // Extensii necesare: validare ID (ar trebui 0xE5), verificare ACK, retry logic
+    wire.sendStart();
+    wire.writeAddrRead(ADX345_I2C_ADDR);
+    char deviceId = 0x00;
+    wire.readByte(deviceId);
+    wire.sendStop();
+
+    delay(500);
+
+    // TODO 3: COMPLETAT - Activare modul ADXL345 pentru citire
+    // Obtinute: START condition, adresare slave mod WRITE, scriere POWER_CTL register (0x2D)
+    // cu valoare 0x08 (measurement mode ON)
+    // Extensii necesare: verificare ACK la fiecare byte, timeout, validare stare
+    wire.sendStart();
+    wire.writeAddrWrite(ADX345_I2C_ADDR);
+    wire.writeByte(0x2D);  // POWER_CTL register
+    wire.writeByte(0x08);  // enable measurement mode
+    wire.sendStop();
+
+    delay(500);
+}
+
+void ADXL_readData() {
+    // TODO 3: COMPLETAT - Citire X, Y, Z de la ADXL345 si trimitere la PC prin UART
+    // Obtinute: 
+    // - START condition si adresare pentru WRITE
+    // - Trimitere adresa registru DATAX0 (0x32)
+    // - Repeated START si adresare pentru READ
+    // - Citire 6 bytes (xLow, xHigh, yLow, yHigh, zLow, zHigh)
+    // - Combinare bytes in valori 16-bit signed
+    // - Formatare si trimitere date via UART
+    // Extensii necesare:
+    // - Verificare ACK la fiecare transfer
+    // - Implementare timeout pentru operatii I2C
+    // - Validare range valori citite
+    // - Buffer circular pentru mediere date
+    char xLow, xHigh, yLow, yHigh, zLow, zHigh;
+
+    wire.sendStart();
+    wire.writeAddrWrite(ADX345_I2C_ADDR);
+    wire.writeByte(DATAX0);  // DATAX0 register address
+
+    wire.sendStart();
+    wire.writeAddrRead(ADX345_I2C_ADDR);
+    wire.readByte(xLow);
+    wire.readByte(xHigh);
+    wire.readByte(yLow);
+    wire.readByte(yHigh);
+    wire.readByte(zLow);
+    wire.readByte(zHigh);
+    wire.sendStop();
+
+    uart.writeByte('X');
+    uart.writeIntegerNumber((int16_t)((xHigh << 8) | xLow));
+    uart.writeByte(' ');
+    uart.writeByte('Y');
+    uart.writeIntegerNumber((int16_t)((yHigh << 8) | yLow));
+    uart.writeByte(' ');
+    uart.writeByte('Z');
+    uart.writeIntegerNumber((int16_t)((zHigh << 8) | zLow));
+    uart.writeByte('\n');
+}
+
+void loop() {
+    ADXL_readData();
+    delay(500);
+}
