@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "../../HelloWorld"
+		},
+		{
+			"path": "../../I2C"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../OSI"
+		},
+		{
+			"path": "../../SPI"
+		},
+		{
+			"path": "../../UART"
+		}
+	]
+}

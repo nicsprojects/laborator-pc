@@ -4,8 +4,21 @@
 #include "Arduino.h"
 #include "avr8-stub.h"
 #include "app_api.h" // only needed with flash breakpoints
+#include "IAdxlTransport.h"
+#include "I2cTransport.h"
+#include "SpiTransport.h"
+
+#define NACK 0
+#define ACK 1
+
+class IAdxlTransport {
+public:
+virtual void writeRegister(char reg, char value) = 0;
+virtual char readRegister(char reg) = 0;
+};
 
 // TODO: 1. based on IAdxlTransport interface implement two other classes
+class
 // - one I2cTransport for I2C protocol
 // - one SpiTransport for SPI protocol
 
