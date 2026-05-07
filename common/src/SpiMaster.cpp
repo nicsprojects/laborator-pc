@@ -1,4 +1,4 @@
-#include <SpiMaster.h>
+spimaster.cpp #include <SpiMaster.h>
 #include <avr/io.h>
 
 void SpiMaster::init()
@@ -15,11 +15,10 @@ void SpiMaster::init()
     // check ADXL datasheet for clock polarity
     // check ADXL datasheet for clock phase
 
-    DDRB |= (1 << DDB2);
-    PORTB |= (1 << PORTB2);
-    DDRB |= (1 << DDB3) | (1 << DDB5);
-    DDRB &= ~(1 << DDB4);
-    SPCR = (1 << SPE) | (1 << MSTR) | (1 << CPOL) | (1 << CPHA);
+    DDRB |= (1 << DDB3) | (1 << DDB5) | (1 << DDB2);
+    DDRB |= (1 << DDB1);
+    PORTB |= (1 << PORTB1);
+    SPCR = (1 << SPE) | (1 << MSTR) | (1 << CPOL) | (1 << CPHA) | (1 << SPR0);
 }
 
 char SpiMaster::transmit(const char &d)
