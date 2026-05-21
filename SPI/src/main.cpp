@@ -1,4 +1,4 @@
-main.cpp
+
 // Objectives:
 // 1. configure SPI
 // 2. comupaction over SPI
