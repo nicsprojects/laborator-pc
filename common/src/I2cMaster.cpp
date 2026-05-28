@@ -7,9 +7,10 @@ void I2cMaster::_writeByte(const char &data)
     // write byte
     // send command to send byte
     // wait for ack or nack
-    TWDR = data; // place the data byte into the I2C data register
+    TWDR = data; // Load the data byte into the TWI Data Register (TWDR)
+    // Clear TWINT to start the transmission and ensure TWI is enabled (TWEN)
     TWCR = (1 << TWINT) | (1 << TWEN);
-    // start the I2C transfer by clearing TWINT and enabling TWI
+    // Wait until TWINT is set by hardware indicating the transfer finished
     while (!(TWCR & (1 << TWINT)))
         ;
 }
@@ -21,12 +22,12 @@ void I2cMaster::_readByte(char &data)
     // wait for ack or nack
     // read byte
 
+    // Start reception by clearing TWINT and keeping TWI enabled
     TWCR = (1 << TWINT) | (1 << TWEN);
-    // start the I2C read operation
+    // Wait for the reception to complete (TWINT set)
     while (!(TWCR & (1 << TWINT)))
         ;
-    data = TWDR;
-    // store received byte into the output variable
+    data = TWDR; // Read the received byte from TWDR
 }
 
 void I2cMaster::init()
@@ -35,10 +36,10 @@ void I2cMaster::init()
     // set frequency; read datasheet for SCLK frequency
     // set SCLK pin output
     // enable internal pull up resistor for SCLK and SDA, set PORTxn = 1
-    TWSR = 0x00;                            // prescaler = 1
-    TWBR = 72;                              // SCL frequency = F_CPU / (16 + 2 * TWBR * prescaler) = 100kHz
-    TWCR = (1 << TWEN);                     // enable TWI
-    PORTC |= (1 << PORTC4) | (1 << PORTC5); // enable pull-up resistors for SCL and SDA
+    TWSR = 0x00;                            // Set TWI Status Register prescaler bits to 0 → prescaler = 1
+    TWBR = 72;                              // Set TWI Bit Rate Register to get ~100kHz SCL with 16MHz F_CPU
+    TWCR = (1 << TWEN);                     // Enable TWI by setting TWEN in TWCR
+    PORTC |= (1 << PORTC4) | (1 << PORTC5); // Enable internal pull-up resistors on PC4 (SDA) and PC5 (SCL)
 }
 
 void I2cMaster::sendStart()
@@ -46,8 +47,9 @@ void I2cMaster::sendStart()
     // TODO: 2. send I2C start condition
     // send start condition
     // wait for start has been transmitted
+    // Transmit START by setting TWSTA and clear TWINT to begin
     TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
-    // request START condition transmission and enable TWI
+    // Wait for TWINT to be set indicating START has been transmitted
     while (!(TWCR & (1 << TWINT)))
         ;
 }
@@ -56,9 +58,9 @@ bool I2cMaster::writeAddrWrite(const char &addr)
 {
     // TODO: 2. send slave addr for write
     // add write bit to addr {addr[6:0],r/w}
+    // Shift 7-bit address left and add write bit (0), then transmit
     _writeByte((addr << 1) | 0);
-    // send 7-bit address with write bit appended as LSB
-    // check if ack received for addr
+    // Check TWSR status bits masked with 0xF8 for SLA+W transmitted and ACK received (0x18)
     return (TWSR & 0xF8) == 0x18; // SLA+W transmitted and ACK received
 }
 
@@ -66,9 +68,9 @@ bool I2cMaster::writeAddrRead(const char &addr)
 {
     // TODO: 2. send slave addr for read
     // add read bit to addr {addr[6:0],r/w}
+    // Shift 7-bit address left and add read bit (1), then transmit
     _writeByte((addr << 1) | 1);
-    // send 7-bit address with read bit appended as LSB
-    // check if ack received for addr
+    // Check TWSR status for SLA+R transmitted and ACK received (0x40)
     return (TWSR & 0xF8) == 0x40; // SLA+R transmitted and ACK received
 }
 
@@ -76,9 +78,9 @@ bool I2cMaster::writeByte(const char &d, I2cResponse expectedResponse)
 {
     // TODO: 2. send byte on I2C
     // send byte
+    // Transmit the data byte
     _writeByte(d);
-    // send one data byte on the bus
-    // retrun if ack received
+    // Return true if status indicates data transmitted and ACK received (0x28)
     return (TWSR & 0xF8) == 0x28; // Data transmitted and ACK received
 }
 
@@ -86,25 +88,26 @@ bool I2cMaster::readByte(char &d, I2cResponse expectedResponse)
 {
     if (expectedResponse == ACKNOWLEDGE)
     {
+        // Prepare to receive a byte and reply with ACK after reception (TWEA = 1)
         TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA); // Enable ACK after reception
     }
     else
     {
-        TWCR = (1 << TWINT) | (1 << TWEN); // No ACK after reception (trimite NACK)
+        // Prepare to receive a byte and do not ACK (send NACK) after reception
+        TWCR = (1 << TWINT) | (1 << TWEN); // No ACK after reception (send NACK)
     }
-    // start the receive operation with ACK or NACK as requested
+    // Wait for reception to complete
     while (!(TWCR & (1 << TWINT)))
-        ;     
-    d = TWDR; 
-    // read the received byte from the I2C data register
-    return true;
+        ;
+    d = TWDR; // Read received byte from data register
+    return true; // Indicate success
 }
 
 void I2cMaster::sendStop()
 {
     // TODO: 2. send I2C stop condition
+    // Transmit STOP condition: set TWSTO and clear TWINT to start STOP
     TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
-    // request STOP condition transmission and release the bus
 }
 
 
