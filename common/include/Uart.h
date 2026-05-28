@@ -32,3 +32,58 @@ public:
 };
 
 #endif // UART_H
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: Uart.h
+==================================================
+
+Scopul fișierului:
+- Declară clasa Uart.
+- Clasa Uart oferă funcții de nivel mai înalt pentru comunicarea UART.
+- Implementarea efectivă a metodelor se află în Uart.cpp.
+- Fișierul header este folosit ca interfață între main.cpp și codul UART.
+
+Constanta: FOSC
+- Reprezintă frecvența procesorului.
+- Valoarea este 16 MHz.
+- Este folosită pentru calcularea baud rate-ului UART.
+
+Clasa: Uart
+- Abstractizează comunicația UART0 a microcontrolerului ATmega328P.
+- Permite trimiterea și primirea de date fără ca main.cpp să lucreze direct cu registrele UART.
+
+Metoda: void init()
+- Inițializează perifericul UART.
+- Configurează baud rate-ul.
+- Activează transmisia și recepția.
+- Configurează formatul cadrului UART.
+
+Metoda: void writeByte(const char& d)
+- Trimite un singur byte prin UART.
+- Este folosită ca funcție de bază pentru transmiterea caracterelor.
+
+Metoda: bool available()
+- Verifică dacă există date primite în bufferul UART.
+- Returnează true dacă se poate citi un byte.
+- Returnează false dacă nu există date disponibile.
+
+Metoda: char readByte()
+- Citește un byte primit prin UART.
+- Așteaptă până când un byte este disponibil.
+- Returnează caracterul citit.
+
+Metoda: void writeString(const char* msg)
+- Trimite un șir de caractere prin UART.
+- Apelează writeByte() pentru fiecare caracter din șir.
+
+Metoda: void writeIntegerNumber(const int& number, const int& base = 10)
+- Trimite un număr întreg prin UART.
+- Numărul este convertit în text.
+- Parametrul base stabilește baza de afișare, de exemplu 10 pentru zecimal sau 16 pentru hexazecimal.
+
+Observație:
+- Acest fișier doar declară funcțiile.
+- Codul concret, cu registrele UCSR0A, UCSR0B, UCSR0C, UBRR0 și UDR0, este în Uart.cpp.
+- Directiva #ifndef / #define / #endif previne includerea multiplă a headerului.
+*/
