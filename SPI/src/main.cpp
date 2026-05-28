@@ -34,6 +34,7 @@ void ADXL_enable()
     // TODO: 2. select ADXL
 
     digitalWrite(ADXL_CS, LOW);
+    // select ADXL345 by pulling chip select low
 }
 
 void ADXL_disable()
@@ -41,11 +42,13 @@ void ADXL_disable()
     // TODO: 2. deselect ADXL
 
     digitalWrite(ADXL_CS, HIGH);
+    // deselect ADXL345 by driving chip select high
 }
 
 char ADXL_cmdBuilder(char addr, bool rw, bool mb)
 {
     return (addr & 0b00111111) | (mb << 6) | (rw << 7);
+    // combine register address, multi-byte flag and read/write flag into command byte
 }
 
 void setup()
@@ -55,20 +58,24 @@ void setup()
 
     // TODO: 1. set an CS pin and make it as output
     pinMode(ADXL_CS, OUTPUT);
+    // configure the ADXL CS pin as output so it can select/deselect the sensor
     ADXL_disable();
 
     spi.init();
 
     ADXL_enable();
+    // begin SPI transfer to read device ID
     spi.transmit(ADXL_cmdBuilder(DEVID_ADDR, true, false));
     uint8_t devId = spi.transmit(0x00);
     ADXL_disable();
 
     uart.writeString("ADXL345 ID: 0x");
+    // print label for device ID readout
     uart.writeIntegerNumber(devId, 16);
     uart.writeString("\r\n");
 
     ADXL_enable();
+    // select ADXL345 to write the power control register
     spi.transmit(ADXL_cmdBuilder(POWER_CTL, false, false));
     spi.transmit(0x08);
     ADXL_disable();
@@ -89,16 +96,21 @@ void ADXL_readData()
     uint8_t buffer[6];
 
     ADXL_enable();
+    // select ADXL345 before reading sensor data
     spi.transmit(ADXL_cmdBuilder(DATAX0, true, true));
     for (int i = 0; i < 6; i++)
     {
         buffer[i] = spi.transmit(0x00);
     }
+    // read six bytes from ADXL345, sending dummy bytes to clock data out
     ADXL_disable();
 
     x = (buffer[1] << 8) | buffer[0];
+    // combine X low and high bytes into signed 16-bit value
     y = (buffer[3] << 8) | buffer[2];
+    // combine Y low and high bytes into signed 16-bit value
     z = (buffer[5] << 8) | buffer[4];
+    // combine Z low and high bytes into signed 16-bit value
 
     uart.writeString("X: ");
     uart.writeIntegerNumber(x, 10);
@@ -107,6 +119,7 @@ void ADXL_readData()
     uart.writeString(" Z: ");
     uart.writeIntegerNumber(z, 10);
     uart.writeString("\r\n");
+    // send newline to terminate the output line
 }
 
 void loop()

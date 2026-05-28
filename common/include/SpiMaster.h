@@ -6,11 +6,13 @@ class SpiMaster{
 public:
     /// @brief This function enable and configure SPI peripheral. Also configure MCU pins
     void init();
+    // initialize SPI peripheral and configure MOSI/MISO/SCK pins
 
     /// @brief Do one SPI data movement
     /// @param d The byte to be send on MOSI
     /// @return The byte received on MISO
     char transmit(const char& d);
+    // send one byte over SPI and return the received byte
 };
 
 #endif // SPI_MASTER_H
