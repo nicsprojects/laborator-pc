@@ -82,3 +82,33 @@ void loop() {
     ADXL_readData();
     delay(500);
 }
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: main.cpp - Laborator I2C
+==================================================
+
+Metoda: setup()
+- Inițializează UART pentru afișarea datelor în terminal.
+- Inițializează magistrala I2C prin wire.init().
+- Citește registrul DEVID al senzorului ADXL345.
+- Pentru citirea DEVID se trimite START, adresa cu write, registrul 0x00,
+  apoi repeated START, adresa cu read, se citește byte-ul și se trimite STOP.
+- Activează senzorul ADXL345 scriind valoarea 0x08 în registrul POWER_CTL, adresa 0x2D.
+- Valoarea 0x08 setează bitul MEASURE, adică senzorul începe măsurarea accelerației.
+
+Metoda: ADXL_readData()
+- Citește 6 bytes începând de la registrul 0x32, adică DATAX0.
+- Cei 6 bytes reprezintă datele pentru axele X, Y și Z.
+- Pentru primii 5 bytes se trimite ACK, deoarece mai urmează date.
+- Pentru ultimul byte se trimite NACK, deoarece citirea se termină.
+- Combină câte doi bytes pentru fiecare axă:
+  X = DATAX1:DATAX0
+  Y = DATAY1:DATAY0
+  Z = DATAZ1:DATAZ0
+- Trimite valorile X, Y și Z prin UART către calculator.
+
+Metoda: loop()
+- Apelează periodic ADXL_readData().
+- Afișează continuu valorile citite de la accelerometrul ADXL345.
+*/

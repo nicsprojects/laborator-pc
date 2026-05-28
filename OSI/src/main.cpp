@@ -177,3 +177,39 @@ void loop()
         delay(500);
     }
 }
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: main.cpp - Laborator OSI
+==================================================
+
+Ideea principală:
+- Laboratorul OSI separă aplicația de protocolul de comunicație.
+- Aplicația nu trebuie să știe dacă senzorul ADXL345 este citit prin SPI sau I2C.
+- Driverul ADXL345 oferă funcții de nivel înalt, iar dedesubt se folosește protocolul ales.
+
+Metoda: setup()
+- Inițializează UART pentru afișarea datelor.
+- Inițializează protocolul ales pentru comunicație: SPI sau I2C.
+- Inițializează senzorul ADXL345.
+- Verifică senzorul citind registrul DEVID.
+- Activează modul de măsurare scriind 0x08 în registrul POWER_CTL.
+
+Metoda: ADXL_readData()
+- Apelează funcții de nivel înalt pentru citirea accelerației.
+- Nu lucrează direct cu registrele SPI sau I2C.
+- Citește valorile pentru X, Y și Z.
+- Trimite valorile prin UART.
+
+Metoda: loop()
+- Apelează periodic citirea senzorului.
+- Afișează datele obținute.
+- Demonstrează că aplicația rămâne aceeași indiferent de protocolul folosit.
+
+Explicație OSI:
+- Nivel aplicație: main.cpp cere datele de la senzor.
+- Nivel driver: codul ADXL345 știe ce registre trebuie citite sau scrise.
+- Nivel protocol: SPI sau I2C execută efectiv transferul de bytes.
+- Nivel hardware: registrele ATmega328P controlează perifericele reale.
+- Avantajul este modularitatea: putem schimba SPI cu I2C fără să rescriem logica aplicației.
+*/

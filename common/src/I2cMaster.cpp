@@ -11,7 +11,7 @@ void I2cMaster::_writeByte(const char &data)
     TWCR = (1 << TWINT) | (1 << TWEN);
     while (!(TWCR & (1 << TWINT)))
         ;
-}  
+}
 
 void I2cMaster::_readByte(char &data)
 {
@@ -96,3 +96,49 @@ void I2cMaster::sendStop()
     // TODO: 2. send I2C stop condition
     TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
 }
+
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: I2cMaster.cpp
+==================================================
+
+Metoda: I2cMaster::init()
+- Configurează perifericul TWI/I2C al ATmega328P.
+- Setează prescalerul la 1 prin TWSR.
+- Setează viteza magistralei prin TWBR.
+- Activează TWI prin bitul TWEN din TWCR.
+- Activează rezistențele pull-up interne pentru SDA și SCL pe PORTC4 și PORTC5.
+
+Metoda: I2cMaster::sendStart()
+- Trimite condiția START pe magistrala I2C.
+- Setează biții TWINT, TWSTA și TWEN în TWCR.
+- Așteaptă până când operația este terminată, verificând TWINT.
+
+Metoda: I2cMaster::writeAddrWrite(const char &addr)
+- Trimite adresa slave-ului împreună cu bitul de write.
+- Forma trimisă este: adresa pe 7 biți urmată de bitul 0.
+- Verifică statusul 0x18, adică SLA+W transmis și ACK primit.
+
+Metoda: I2cMaster::writeAddrRead(const char &addr)
+- Trimite adresa slave-ului împreună cu bitul de read.
+- Forma trimisă este: adresa pe 7 biți urmată de bitul 1.
+- Verifică statusul 0x40, adică SLA+R transmis și ACK primit.
+
+Metoda: I2cMaster::writeByte(const char &d, I2cResponse expectedResponse)
+- Trimite un byte pe magistrala I2C.
+- Scrie byte-ul în TWDR.
+- Pornește transmisia prin TWCR.
+- Verifică statusul 0x28, adică data transmisă și ACK primit.
+
+Metoda: I2cMaster::readByte(char &d, I2cResponse expectedResponse)
+- Citește un byte de pe magistrala I2C.
+- Dacă expectedResponse este ACKNOWLEDGE, trimite ACK după recepție.
+- Dacă expectedResponse este NACK, nu mai confirmă ultimul byte.
+- Salvează byte-ul primit din TWDR în variabila d.
+
+Metoda: I2cMaster::sendStop()
+- Trimite condiția STOP pe magistrala I2C.
+- Setează biții TWINT, TWEN și TWSTO în TWCR.
+- Eliberează magistrala I2C.
+*/

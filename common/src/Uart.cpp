@@ -61,3 +61,38 @@ void Uart::writeIntegerNumber(const int &number, const int &base)
     itoa(number, buffer, base);
     writeString(buffer);
 }
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: Uart.cpp
+==================================================
+
+Metoda: Uart::init()
+- Configurează perifericul UART0 al ATmega328P.
+- Setează PD0 ca RX și PD1 ca TX.
+- Calculează valoarea UBRR pentru baud rate 9600.
+- Activează transmisia și recepția prin UCSR0B.
+- Configurează cadrul UART: 8 biți de date, 1 bit de stop, fără paritate.
+
+Metoda: Uart::writeByte(const char &d)
+- Așteaptă până când registrul de transmisie este liber.
+- Verifică flag-ul UDRE0 din UCSR0A.
+- Scrie byte-ul în UDR0 pentru a fi transmis.
+
+Metoda: Uart::available()
+- Verifică dacă există date primite.
+- Testează flag-ul RXC0 din UCSR0A.
+- Returnează true dacă există un byte disponibil.
+
+Metoda: Uart::readByte()
+- Așteaptă până când se primește un byte.
+- Citește și returnează valoarea din UDR0.
+
+Metoda: Uart::writeString(const char *msg)
+- Trimite un șir de caractere prin UART.
+- Apelează writeByte() pentru fiecare caracter.
+
+Metoda: Uart::writeIntegerNumber(const int &number, const int &base)
+- Convertește un număr întreg în text folosind baza primită.
+- Trimite rezultatul prin UART folosind writeString().
+*/

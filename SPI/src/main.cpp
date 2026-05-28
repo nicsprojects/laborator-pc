@@ -114,3 +114,45 @@ void loop()
     ADXL_readData();
     delay(500);
 }
+
+/*
+==================================================
+EXPLICAȚIE FIȘIER: main.cpp - Laborator SPI
+==================================================
+
+Metoda: ADXL_enable()
+- Selectează senzorul ADXL345 pentru comunicația SPI.
+- Pune pinul CS pe LOW.
+- Cât timp CS este LOW, senzorul acceptă comenzile trimise de master.
+
+Metoda: ADXL_disable()
+- Deselectează senzorul ADXL345.
+- Pune pinul CS pe HIGH.
+- Cât timp CS este HIGH, senzorul ignoră comunicația SPI.
+
+Metoda: ADXL_cmdBuilder(char addr, bool rw, bool mb)
+- Construiește byte-ul de comandă pentru ADXL345.
+- Păstrează adresa registrului pe 6 biți.
+- Adaugă bitul RW pentru citire sau scriere.
+- Adaugă bitul MB pentru acces multi-byte.
+- Este folosită pentru citirea sau scrierea registrelor ADXL345.
+
+Metoda: setup()
+- Inițializează UART pentru afișarea datelor.
+- Inițializează SPI în mod Master.
+- Configurează pinul CS.
+- Citește registrul DEVID pentru verificarea senzorului.
+- Activează senzorul scriind 0x08 în registrul POWER_CTL.
+
+Metoda: ADXL_readData()
+- Selectează senzorul cu CS LOW.
+- Trimite comanda de citire multi-byte de la registrul DATAX0, adresa 0x32.
+- Trimite bytes dummy pentru a primi datele de la senzor.
+- Citește 6 bytes pentru axele X, Y și Z.
+- Combină câte doi bytes pentru fiecare axă.
+- Trimite valorile prin UART.
+
+Metoda: loop()
+- Citește periodic datele de accelerație.
+- Afișează valorile X, Y și Z în terminal.
+*/
